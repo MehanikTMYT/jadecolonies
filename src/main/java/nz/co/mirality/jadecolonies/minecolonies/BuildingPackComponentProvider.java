@@ -1,29 +1,25 @@
 package nz.co.mirality.jadecolonies.minecolonies;
 
-import com.minecolonies.api.colony.buildings.IBuilding;
-import com.minecolonies.api.colony.buildings.IRSComponent;
-import com.minecolonies.api.tileentities.AbstractTileEntityColonyBuilding;
-import com.minecolonies.core.tileentities.TileEntityDecorationController;
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
-import snownee.jade.api.IServerDataProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
 
-import static nz.co.mirality.jadecolonies.JadeColonies.ID;
-
 /**
  * Adds the style pack that the building comes from.
+ * <p>
+ * The server-side data this reads is prepared by {@link BuildingPackServerDataProvider} -- Jade (since Minecraft
+ * 1.21.6) requires server data providers and client component providers to be separate objects, even though the
+ * two here share the same UID and represent one logical feature.
  */
-class BuildingPackComponentProvider implements IBlockComponentProvider, IServerDataProvider<BlockAccessor>
+class BuildingPackComponentProvider implements IBlockComponentProvider
 {
-    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(ID, "colony.pack");
-    private static final String PACK_NAME = UID.toString();
+    private static final Identifier UID = BuildingPackServerDataProvider.UID;
+    private static final String PACK_NAME = BuildingPackServerDataProvider.PACK_NAME;
     private static final BuildingPackComponentProvider INSTANCE = new BuildingPackComponentProvider();
 
     public static BuildingPackComponentProvider getInstance()
@@ -33,7 +29,7 @@ class BuildingPackComponentProvider implements IBlockComponentProvider, IServerD
 
     @NotNull
     @Override
-    public ResourceLocation getUid()
+    public Identifier getUid()
     {
         return UID;
     }
@@ -45,28 +41,11 @@ class BuildingPackComponentProvider implements IBlockComponentProvider, IServerD
     }
 
     @Override
-    public void appendServerData(@NotNull final CompoundTag compoundTag,
-                                 @NotNull final BlockAccessor blockAccessor)
-    {
-        if (blockAccessor.getBlockEntity() instanceof final AbstractTileEntityColonyBuilding entity)
-        {
-            final IBuilding building = entity.getBuilding();
-            if (building == null || building instanceof IRSComponent) { return; }
-
-            compoundTag.putString(PACK_NAME, building.getStructurePack());
-        }
-        else if (blockAccessor.getBlockEntity() instanceof final TileEntityDecorationController deco)
-        {
-            compoundTag.putString(PACK_NAME, deco.getPackName());
-        }
-    }
-
-    @Override
     public void appendTooltip(@NotNull final ITooltip tooltip,
                               @NotNull final BlockAccessor blockAccessor,
                               @NotNull final IPluginConfig pluginConfig)
     {
-        final String name = blockAccessor.getServerData().getString(PACK_NAME);
+        final String name = blockAccessor.getServerData().getStringOr(PACK_NAME, "");
 
         if (!name.isEmpty())
         {

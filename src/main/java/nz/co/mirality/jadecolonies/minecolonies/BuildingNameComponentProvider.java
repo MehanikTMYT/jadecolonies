@@ -1,33 +1,30 @@
 package nz.co.mirality.jadecolonies.minecolonies;
 
-import com.minecolonies.api.colony.buildings.IBuilding;
-import com.minecolonies.api.colony.buildings.IRSComponent;
-import com.minecolonies.api.tileentities.AbstractTileEntityColonyBuilding;
-import com.minecolonies.core.tileentities.TileEntityDecorationController;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
-import snownee.jade.api.IServerDataProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
-
-import static nz.co.mirality.jadecolonies.JadeColonies.ID;
 
 /**
  * If the building has a custom name, displays the custom name as the main block name, with the name & level below.
  * Otherwise, replaces the block name with the name & level of the building (i.e. appends the level).
+ * <p>
+ * The server-side data this reads is prepared by {@link BuildingNameServerDataProvider} -- Jade (since Minecraft
+ * 1.21.6) requires server data providers and client component providers to be separate objects, even though the
+ * two here share the same UID and represent one logical feature.
  */
-class BuildingNameComponentProvider implements IBlockComponentProvider, IServerDataProvider<BlockAccessor>
+class BuildingNameComponentProvider implements IBlockComponentProvider
 {
-    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(ID, "colony.hut");
-    private static final String OVERRIDE_NAME = "givenName";
-    private static final String BUILDING_NAME = UID.toString();
+    private static final Identifier UID = BuildingNameServerDataProvider.UID;
+    private static final String BUILDING_NAME = BuildingNameServerDataProvider.BUILDING_NAME;
     private static final BuildingNameComponentProvider INSTANCE = new BuildingNameComponentProvider();
 
     public static BuildingNameComponentProvider getInstance()
@@ -37,7 +34,7 @@ class BuildingNameComponentProvider implements IBlockComponentProvider, IServerD
 
     @NotNull
     @Override
-    public ResourceLocation getUid()
+    public Identifier getUid()
     {
         return UID;
     }
@@ -55,37 +52,6 @@ class BuildingNameComponentProvider implements IBlockComponentProvider, IServerD
     }
 
     @Override
-    public void appendServerData(@NotNull final CompoundTag compoundTag,
-                                 @NotNull final BlockAccessor blockAccessor)
-    {
-        final HolderLookup.Provider lookupProvider = blockAccessor.getLevel().registryAccess();
-        if (blockAccessor.getBlockEntity() instanceof final AbstractTileEntityColonyBuilding entity)
-        {
-            final IBuilding building = entity.getBuilding();
-            if (building == null || building instanceof IRSComponent) { return; }
-
-            final String name = building.getCustomName();
-            final MutableComponent nameLevel = Component.translatable("%s %s",
-                    Component.translatable(building.getBuildingType().getTranslationKey()),
-                    Integer.toString(building.getBuildingLevel()));
-
-            if (name.isEmpty())
-            {
-                compoundTag.putString(OVERRIDE_NAME, Component.Serializer.toJson(nameLevel, lookupProvider));
-            }
-            else
-            {
-                compoundTag.putString(OVERRIDE_NAME, Component.Serializer.toJson(Component.literal(name), lookupProvider));
-                compoundTag.putString(BUILDING_NAME, Component.Serializer.toJson(nameLevel.withStyle(ChatFormatting.GRAY), lookupProvider));
-            }
-        }
-        else if (blockAccessor.getBlockEntity() instanceof final TileEntityDecorationController deco)
-        {
-            compoundTag.putString(BUILDING_NAME, Component.Serializer.toJson(Component.literal(deco.getBlueprintPath()), lookupProvider));
-        }
-    }
-
-    @Override
     public void appendTooltip(@NotNull final ITooltip tooltip,
                               @NotNull final BlockAccessor blockAccessor,
                               @NotNull final IPluginConfig pluginConfig)
@@ -95,8 +61,16 @@ class BuildingNameComponentProvider implements IBlockComponentProvider, IServerD
 
         if (data.contains(BUILDING_NAME))
         {
-            final Component name = Component.Serializer.fromJson(data.getString(BUILDING_NAME), lookupProvider);
+            final Component name = decode(data.get(BUILDING_NAME), lookupProvider);
             tooltip.add(name);
         }
+    }
+
+    // Component.Serializer.fromJson(String, HolderLookup.Provider) was removed; Component is now
+    // decoded via its registry-aware Codec (ComponentSerialization.CODEC), directly from NBT (NbtOps)
+    // instead of round-tripping through a JSON string.
+    private static Component decode(final Tag tag, final HolderLookup.Provider lookupProvider)
+    {
+        return ComponentSerialization.CODEC.parse(lookupProvider.createSerializationContext(NbtOps.INSTANCE), tag).getOrThrow();
     }
 }

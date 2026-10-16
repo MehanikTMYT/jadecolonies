@@ -2,15 +2,11 @@ package nz.co.mirality.jadecolonies.minecolonies;
 
 import com.ldtteam.blockui.UiRenderMacros;
 import com.minecolonies.api.util.constant.WindowConstants;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.phys.Vec2;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.ui.Element;
-import snownee.jade.api.ui.IElement;
 
 /**
  * Renders a colonist's gender.
@@ -25,34 +21,30 @@ class GenderElement extends Element
      * @param isFemale true for female, false for male.
      * @return the corresponding element.
      */
-    public static IElement get(final boolean isFemale)
+    public static Element get(final boolean isFemale)
     {
         return isFemale ? FEMALE : MALE;
     }
 
-    private final ResourceLocation textureLocation;
+    private final Identifier textureLocation;
 
     private GenderElement(final String texture)
     {
-        this.textureLocation = ResourceLocation.parse(texture);
+        this.textureLocation = Identifier.parse(texture);
+        this.width = 15;
+        this.height = 15;
+    }
+
+    @Override
+    public void extractRenderState(@NotNull final GuiGraphicsExtractor guiGraphicsExtractor, final int x, final int y, final float partialTick)
+    {
+        UiRenderMacros.blit(guiGraphicsExtractor, this.textureLocation, x, y, 15, 15, 0, 0, 30, 30, 30, 30);
     }
 
     @NotNull
     @Override
-    public Vec2 getSize()
+    public Component getNarration()
     {
-        return new Vec2(15, 15);
-    }
-
-    @Override
-    public void render(@NotNull final GuiGraphics guiGraphics, final float x, final float y, final float maxX, final float maxY)
-    {
-        UiRenderMacros.blit(guiGraphics.pose(), this.textureLocation, (int) x, (int) y, 15, 15, 0, 0, 30, 30, 30, 30);
-    }
-
-    @Override
-    public @Nullable String getMessage()
-    {
-        return Component.translatable("jadecolonies.jade.colony.gender." + (this == FEMALE ? "female" : "male")).getString();
+        return Component.translatable("jadecolonies.jade.colony.gender." + (this == FEMALE ? "female" : "male"));
     }
 }

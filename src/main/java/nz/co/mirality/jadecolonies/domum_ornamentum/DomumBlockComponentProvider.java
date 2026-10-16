@@ -4,10 +4,11 @@ import com.ldtteam.domumornamentum.block.IMateriallyTexturedBlock;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.ITooltip;
@@ -20,7 +21,7 @@ import static nz.co.mirality.jadecolonies.JadeColonies.ID;
 
 class DomumBlockComponentProvider implements IBlockComponentProvider
 {
-    public static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(ID, "domum.materials");
+    public static final Identifier UID = Identifier.fromNamespaceAndPath(ID, "domum.materials");
     private static final DomumBlockComponentProvider INSTANCE = new DomumBlockComponentProvider();
 
     public static DomumBlockComponentProvider getInstance()
@@ -29,7 +30,7 @@ class DomumBlockComponentProvider implements IBlockComponentProvider
     }
 
     @Override
-    public ResourceLocation getUid()
+    public Identifier getUid()
     {
         return UID;
     }
@@ -50,12 +51,12 @@ class DomumBlockComponentProvider implements IBlockComponentProvider
             return;
         }
 
-        final ItemStack stack = blockAccessor.getBlock().getCloneItemStack(blockAccessor.getBlockState(),
-                blockAccessor.getHitResult(), blockAccessor.getLevel(), blockAccessor.getPosition(),
-                blockAccessor.getPlayer());
+        final ItemStack stack = blockAccessor.getBlockState().getCloneItemStack(blockAccessor.getLevel(),
+                blockAccessor.getPosition(), true);
 
         final List<Component> components = new ArrayList<>();
-        stack.getItem().appendHoverText(stack, Item.TooltipContext.of(blockAccessor.getLevel()), components, TooltipFlag.Default.NORMAL);
+        stack.getItem().appendHoverText(stack, Item.TooltipContext.of(blockAccessor.getLevel()), TooltipDisplay.DEFAULT,
+                components::add, TooltipFlag.Default.NORMAL);
 
         // remove blank lines and the "crafted in an architect's cutter"
         components.removeIf(c -> (c.getContents() instanceof TranslatableContents t && t.getKey().equals("domum_ornamentum.origin.tooltip")) ||

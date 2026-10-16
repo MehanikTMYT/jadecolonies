@@ -5,7 +5,7 @@ import com.minecolonies.api.colony.buildings.views.IBuildingView;
 import com.minecolonies.api.tileentities.AbstractTileEntityColonyBuilding;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.IBlockComponentProvider;
@@ -19,7 +19,7 @@ import static nz.co.mirality.jadecolonies.JadeColonies.ID;
  */
 class CitizenListComponentProvider implements IBlockComponentProvider
 {
-    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(ID, "colony.citizens");
+    private static final Identifier UID = Identifier.fromNamespaceAndPath(ID, "colony.citizens");
     private static final CitizenListComponentProvider INSTANCE = new CitizenListComponentProvider();
 
     public static CitizenListComponentProvider getInstance()
@@ -29,7 +29,7 @@ class CitizenListComponentProvider implements IBlockComponentProvider
 
     @NotNull
     @Override
-    public ResourceLocation getUid()
+    public Identifier getUid()
     {
         return UID;
     }

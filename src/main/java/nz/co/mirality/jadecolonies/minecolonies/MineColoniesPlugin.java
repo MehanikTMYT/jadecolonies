@@ -14,10 +14,10 @@ public class MineColoniesPlugin implements IWailaPlugin
     @Override
     public void register(final IWailaCommonRegistration registration)
     {
-        registration.registerBlockDataProvider(BuildingNameComponentProvider.getInstance(), AbstractTileEntityColonyBuilding.class);
-        registration.registerBlockDataProvider(BuildingPackComponentProvider.getInstance(), AbstractTileEntityColonyBuilding.class);
-        registration.registerBlockDataProvider(BuildingNameComponentProvider.getInstance(), TileEntityDecorationController.class);
-        registration.registerBlockDataProvider(BuildingPackComponentProvider.getInstance(), TileEntityDecorationController.class);
+        registration.registerBlockDataProvider(BuildingNameServerDataProvider.getInstance(), AbstractTileEntityColonyBuilding.class);
+        registration.registerBlockDataProvider(BuildingPackServerDataProvider.getInstance(), AbstractTileEntityColonyBuilding.class);
+        registration.registerBlockDataProvider(BuildingNameServerDataProvider.getInstance(), TileEntityDecorationController.class);
+        registration.registerBlockDataProvider(BuildingPackServerDataProvider.getInstance(), TileEntityDecorationController.class);
     }
 
     @Override

@@ -1,8 +1,7 @@
 package nz.co.mirality.jadecolonies;
 
-import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import nz.co.mirality.jadecolonies.domum_ornamentum.DomumOrnamentumPlugin;
@@ -12,7 +11,6 @@ import snownee.jade.api.IWailaPlugin;
 import java.util.function.Supplier;
 
 @Mod(JadeColonies.ID)
-@EventBusSubscriber(modid = JadeColonies.ID, bus = EventBusSubscriber.Bus.MOD)
 public class JadeColonies
 {
     public static final String ID = "jadecolonies";
@@ -21,7 +19,16 @@ public class JadeColonies
     public static final String DOMUM_ID = com.ldtteam.domumornamentum.util.Constants.MOD_ID;
     public static final String COLONY_ID = com.minecolonies.api.util.constant.Constants.MOD_ID;
 
-    @SubscribeEvent
+    // The @EventBusSubscriber(bus = Bus.MOD) annotation attribute was removed from NeoForge's
+    // EventBusSubscriber (it now only takes modid/value(Dist[]), for the game event bus). Mod-bus
+    // listeners are now registered explicitly from the @Mod class's constructor via the
+    // FML-injected IEventBus parameter, matching the pattern already proven in
+    // ../warehouseWorkshop's main mod class.
+    public JadeColonies(final IEventBus modEventBus)
+    {
+        modEventBus.addListener(JadeColonies::init);
+    }
+
     public static void init(final FMLCommonSetupEvent event)
     {
         if (ModList.get().isLoaded(JADE_ID))

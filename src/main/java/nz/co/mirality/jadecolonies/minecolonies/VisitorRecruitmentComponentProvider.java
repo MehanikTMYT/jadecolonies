@@ -3,14 +3,14 @@ package nz.co.mirality.jadecolonies.minecolonies;
 import com.minecolonies.api.colony.IVisitorViewData;
 import com.minecolonies.api.entity.citizen.AbstractEntityCitizen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import snownee.jade.api.EntityAccessor;
 import snownee.jade.api.IEntityComponentProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.config.IPluginConfig;
-import snownee.jade.api.ui.IElement;
-import snownee.jade.api.ui.IElementHelper;
+import snownee.jade.api.ui.Element;
+import snownee.jade.api.ui.JadeUI;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import static nz.co.mirality.jadecolonies.JadeColonies.ID;
  */
 class VisitorRecruitmentComponentProvider implements IEntityComponentProvider
 {
-    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(ID, "colony.visitor_cost");
+    private static final Identifier UID = Identifier.fromNamespaceAndPath(ID, "colony.visitor_cost");
 
     private static final VisitorRecruitmentComponentProvider INSTANCE = new VisitorRecruitmentComponentProvider();
 
@@ -33,7 +33,7 @@ class VisitorRecruitmentComponentProvider implements IEntityComponentProvider
 
     @NotNull
     @Override
-    public ResourceLocation getUid()
+    public Identifier getUid()
     {
         return UID;
     }
@@ -53,10 +53,10 @@ class VisitorRecruitmentComponentProvider implements IEntityComponentProvider
         {
             if (citizen.getCitizenDataView() instanceof final IVisitorViewData visitor)
             {
-                final List<IElement> elements = new ArrayList<>();
-                elements.add(IElementHelper.get().text(Component.translatable("jadecolonies.jade.colony.visitor_cost")));
-                elements.add(IElementHelper.get().spacer(4, 1));
-                elements.add(IElementHelper.get().smallItem(visitor.getRecruitCost()));
+                final List<Element> elements = new ArrayList<>();
+                elements.add(JadeUI.text(Component.translatable("jadecolonies.jade.colony.visitor_cost")));
+                elements.add(JadeUI.spacer(4, 1));
+                elements.add(JadeUI.smallItem(visitor.getRecruitCost()));
                 tooltip.add(elements);
             }
         }
